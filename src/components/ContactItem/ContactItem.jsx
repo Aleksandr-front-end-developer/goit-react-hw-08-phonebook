@@ -1,15 +1,15 @@
 import { useDispatch } from 'react-redux';
+import { deleteContactThunk } from '../../redux/contacts/operations';
+import { Button, ListItem, ListItemText } from '@mui/material';
 
-import { deleteContactThunk } from '../../redux/thunk';
-
-export const ContactItem = ({ contact: { name, phone, id } }) => {
+export const ContactItem = ({ contact: { name, number, id } }) => {
   const dispatch = useDispatch();
   return (
-    <li>
-      {name}: {phone}
-      <button onClick={() => dispatch(deleteContactThunk(id))} type="butoon">
+    <ListItem sx={{ py: 1, px: 0 }}>
+      <ListItemText sx={{ mr: 2 }} primary={name} secondary={number} />
+      <Button onClick={() => dispatch(deleteContactThunk(id))} size="small">
         Delete
-      </button>
-    </li>
+      </Button>
+    </ListItem>
   );
 };

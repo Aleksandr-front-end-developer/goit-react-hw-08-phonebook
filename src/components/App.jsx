@@ -1,26 +1,60 @@
-import { lazy, Suspense } from 'react';
-import { Contactsform } from './Contactsform/Contactsform';
-import { Filter } from './Filter/Filter';
+import { useEffect } from 'react';
 import './style.scss';
-import { useSelector } from 'react-redux';
-import { handleError, handleIsLoading } from '../redux/selectors';
-import { DNA } from 'react-loader-spinner';
-const ContactsList = lazy(() => import('./ContactsList/ContactsList'));
+import { useDispatch, useSelector } from 'react-redux';
+import { Route, Routes } from 'react-router-dom';
+
+import { refreshThunk } from '../redux/auth/operations';
+import { handleIsRefreshing } from '../redux/auth/selectors';
+
+import Home from './pages/Home';
+import Layout from './Layout/Layout';
+import Contacts from './pages/Contacts';
+import Login from './pages/Login';
+import Register from './pages/Register';
+
+import PrivateRoute from './PrivateRoute/PrivateRoute';
+import PublicRoute from './PublicRoute/PublicRoute';
 
 export const App = () => {
-  const isLoading = useSelector(handleIsLoading);
-  const error = useSelector(handleError);
+  const disaptch = useDispatch();
+  const isRefreshing = useSelector(handleIsRefreshing);
 
-  return (
-    <div className="phonebook">
-      <h1>Phonebook</h1>
-      <Contactsform />
-      <h2>Contacts</h2>
-      <Filter />
-      <Suspense fallback={<div>Loading...</div>}>
-        {isLoading && <DNA />}
-        {error ? <p>{error}</p> : <ContactsList />}
-      </Suspense>
-    </div>
+  useEffect(() => {
+    disaptch(refreshThunk());
+  }, [disaptch]);
+
+  return isRefreshing ? (
+    <b>Refreshing User...</b>
+  ) : (
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route
+          path="/contacts"
+          element={
+            <PrivateRoute>
+              <Contacts />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+        <Route path="*" element={<Home />} />
+      </Route>
+    </Routes>
   );
 };

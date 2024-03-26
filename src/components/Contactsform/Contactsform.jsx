@@ -1,60 +1,82 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { handleContactsState } from '../../redux/contacts/selectors';
+import { addContactThunk } from '../../redux/contacts/operations';
 
-import { handleContactsState } from '../../redux/selectors';
-import { addContactThunk } from '../../redux/thunk';
+import {
+  Box,
+  Button,
+  CssBaseline,
+  TextField,
+  ThemeProvider,
+  createTheme,
+} from '@mui/material';
+import toast from 'react-hot-toast';
+
+const defaultTheme = createTheme();
 
 export const Contactsform = () => {
   const contacts = useSelector(handleContactsState);
   const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [number, setNumber] = useState('');
   const dispatch = useDispatch();
 
   const handleChange = ({ target }) => {
     if (target.name === 'name') {
       setName(target.value);
     } else {
-      setPhone(target.value);
+      setNumber(target.value);
     }
   };
   const handleSubmit = evt => {
     evt.preventDefault();
     if (contacts.find(item => item.name === name)) {
-      alert(`${name} is already in contacts.`);
+      toast(`${name} is already in contacts.`);
     } else {
-      dispatch(addContactThunk({ name, phone }));
+      dispatch(addContactThunk({ name, number }))
+        .unwrap()
+        .catch(error => toast.error(error));
       setName('');
-      setPhone('');
+      setNumber('');
     }
   };
 
   return (
-    <form className="form" onSubmit={handleSubmit}>
-      <label>
-        Name
-        <input
-          onChange={handleChange}
-          value={name}
-          className="form__input"
-          type="text"
+    <ThemeProvider theme={defaultTheme}>
+      <CssBaseline />
+      <Box
+        maxWidth="sm"
+        component="form"
+        onSubmit={handleSubmit}
+        noValidate
+        sx={{ mt: 1 }}
+      >
+        <TextField
+          margin="normal"
+          required
+          fullWidth
           name="name"
-          required
-        />
-      </label>
-      <label>
-        Namber
-        <input
+          label="Name"
+          type="text"
+          autoComplete="current-password"
+          value={name}
           onChange={handleChange}
-          value={phone}
-          className="form__input"
-          type="tel"
-          name="number"
-          required
         />
-      </label>
-      <button className="form__button" type="submit">
-        Add contact
-      </button>
-    </form>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          name="number"
+          label="Namber"
+          type="tel"
+          autoComplete="current-password"
+          value={number}
+          onChange={handleChange}
+        />
+        <Button type="submit" variant="contained" sx={{ mt: 3, mb: 2 }}>
+          Add contact
+        </Button>
+      </Box>
+    </ThemeProvider>
   );
 };
